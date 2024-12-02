@@ -90,6 +90,13 @@ export type ProductVariant = {
   price: Money;
 };
 
+export type Customer = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+};
+
 export type SEO = {
   title: string;
   description: string;
@@ -268,5 +275,151 @@ export type ShopifyProductsOperation = {
     query?: string;
     reverse?: boolean;
     sortKey?: string;
+  };
+};
+
+export type ShopifyCustomer = {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  acceptsMarketing?: boolean;
+  addresses?: Connection<Address>;
+  orders?: Connection<Order>;
+};
+
+export type Address = {
+  id: string;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  country?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  province?: string;
+  zip?: string;
+};
+
+export type Order = {
+  id: string;
+  orderNumber: number;
+  processedAt: string;
+  totalPrice: Money;
+  financialStatus: string;
+  fulfillmentStatus: string;
+};
+
+export type ShopifyUserError = {
+  code?: string;
+  field?: string[];
+  message: string;
+};
+
+export type ShopifyCustomerCreateOperation = {
+  data: {
+    customerCreate: {
+      customer: ShopifyCustomer | null;
+      customerUserErrors: ShopifyUserError[];
+    };
+  };
+  variables: {
+    input: {
+      email: string;
+      password: string;
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      acceptsMarketing?: boolean;
+    };
+  };
+};
+
+export type ShopifyCustomerAccessTokenCreateOperation = {
+  data: {
+    customerAccessTokenCreate: {
+      customerAccessToken: {
+        accessToken: string;
+        expiresAt: string;
+      } | null;
+      customerUserErrors: ShopifyUserError[];
+    };
+  };
+  variables: {
+    input: {
+      email: string;
+      password: string;
+    };
+  };
+};
+
+export type ShopifyCustomerAccessTokenDeleteOperation = {
+  data: {
+    customerAccessTokenDelete: {
+      deletedAccessToken: string | null;
+      deletedCustomerAccessTokenId: string | null;
+      userErrors: ShopifyUserError[];
+    };
+  };
+  variables: {
+    customerAccessToken: string;
+  };
+};
+
+export type ShopifyCustomerRecoverOperation = {
+  data: {
+    customerRecover: {
+      customerUserErrors: ShopifyUserError[];
+    };
+  };
+  variables: {
+    email: string;
+  };
+};
+
+export type ShopifyCustomerResetOperation = {
+  data: {
+    customerResetByUrl: {
+      customer: ShopifyCustomer | null;
+      customerAccessToken: {
+        accessToken: string;
+        expiresAt: string;
+      } | null;
+      customerUserErrors: ShopifyUserError[];
+    };
+  };
+  variables: {
+    password: string;
+    resetUrl: string;
+  };
+};
+
+export type ShopifyCustomerUpdateOperation = {
+  data: {
+    customerUpdate: {
+      customer: ShopifyCustomer | null;
+      customerUserErrors: ShopifyUserError[];
+    };
+  };
+  variables: {
+    customerAccessToken: string;
+    customer: {
+      email?: string;
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      acceptsMarketing?: boolean;
+      password?: string;
+    };
+  };
+};
+
+export type ShopifyCustomerOperation = {
+  data: {
+    customer: ShopifyCustomer | null;
+  };
+  variables: {
+    customerAccessToken: string;
   };
 };

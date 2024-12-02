@@ -10,6 +10,14 @@ import {
   editCartItemsMutation,
   removeFromCartMutation
 } from './mutations/cart';
+import {
+  customerAccessTokenCreateMutation,
+  customerAccessTokenDeleteMutation,
+  customerCreateMutation,
+  customerRecoverMutation,
+  customerResetByUrlMutation,
+  customerUpdateMutation
+} from './mutations/customer';
 import { getCartQuery } from './queries/cart';
 import {
   getCollectionProductsQuery,
@@ -23,6 +31,8 @@ import {
   getProductRecommendationsQuery,
   getProductsQuery
 } from './queries/product';
+
+import { getCustomerQuery } from './queries/customer';
 import {
   Cart,
   Collection,
@@ -39,6 +49,14 @@ import {
   ShopifyCollectionProductsOperation,
   ShopifyCollectionsOperation,
   ShopifyCreateCartOperation,
+  ShopifyCustomer,
+  ShopifyCustomerAccessTokenCreateOperation,
+  ShopifyCustomerAccessTokenDeleteOperation,
+  ShopifyCustomerCreateOperation,
+  ShopifyCustomerOperation,
+  ShopifyCustomerRecoverOperation,
+  ShopifyCustomerResetOperation,
+  ShopifyCustomerUpdateOperation,
   ShopifyMenuOperation,
   ShopifyPageOperation,
   ShopifyPagesOperation,
@@ -420,6 +438,137 @@ export async function getProducts({
   });
 
   return reshapeProducts(removeEdgesAndNodes(res.body.data.products));
+}
+
+export async function createCustomer(
+  input: ShopifyCustomerCreateOperation['variables']['input']
+): Promise<ShopifyCustomer | null> {
+  const res = await shopifyFetch<ShopifyCustomerCreateOperation>({
+    query: customerCreateMutation,
+    variables: { input },
+    cache: 'no-store'
+  });
+
+  const { data } = res.body;
+
+  if (data.customerCreate.customerUserErrors.length > 0) {
+    console.error(data.customerCreate.customerUserErrors);
+    return null;
+  }
+
+  return data.customerCreate.customer;
+}
+
+export async function loginCustomer(
+  input: ShopifyCustomerAccessTokenCreateOperation['variables']['input']
+): Promise<{ accessToken: string; expiresAt: string } | null> {
+  const res = await shopifyFetch<ShopifyCustomerAccessTokenCreateOperation>({
+    query: customerAccessTokenCreateMutation,
+    variables: { input },
+    cache: 'no-store'
+  });
+
+  const { data } = res.body;
+
+  if (data.customerAccessTokenCreate.customerUserErrors.length > 0) {
+    console.error(data.customerAccessTokenCreate.customerUserErrors);
+    return null;
+  }
+
+  return data.customerAccessTokenCreate.customerAccessToken;
+}
+
+export async function logoutCustomer(customerAccessToken: string): Promise<boolean> {
+  const res = await shopifyFetch<ShopifyCustomerAccessTokenDeleteOperation>({
+    query: customerAccessTokenDeleteMutation,
+    variables: { customerAccessToken },
+    cache: 'no-store'
+  });
+
+  const { data } = res.body;
+
+  if (data.customerAccessTokenDelete.userErrors.length > 0) {
+    console.error(data.customerAccessTokenDelete.userErrors);
+    return false;
+  }
+
+  return true;
+}
+
+export async function getCustomer(customerAccessToken: string): Promise<ShopifyCustomer | null> {
+  const res = await shopifyFetch<ShopifyCustomerOperation>({
+    query: getCustomerQuery,
+    variables: { customerAccessToken },
+    cache: 'no-store'
+  });
+
+  const { data } = res.body;
+
+  if (!data.customer) {
+    return null;
+  }
+
+  return data.customer;
+}
+
+export async function updateCustomer(
+  customerAccessToken: string,
+  customer: ShopifyCustomerUpdateOperation['variables']['customer']
+): Promise<ShopifyCustomer | null> {
+  const res = await shopifyFetch<ShopifyCustomerUpdateOperation>({
+    query: customerUpdateMutation,
+    variables: { customerAccessToken, customer },
+    cache: 'no-store'
+  });
+
+  const { data } = res.body;
+
+  if (data.customerUpdate.customerUserErrors.length > 0) {
+    console.error(data.customerUpdate.customerUserErrors);
+    return null;
+  }
+
+  return data.customerUpdate.customer;
+}
+
+export async function recoverCustomer(email: string): Promise<boolean> {
+  const res = await shopifyFetch<ShopifyCustomerRecoverOperation>({
+    query: customerRecoverMutation,
+    variables: { email },
+    cache: 'no-store'
+  });
+
+  const { data } = res.body;
+
+  if (data.customerRecover.customerUserErrors.length > 0) {
+    console.error(data.customerRecover.customerUserErrors);
+    return false;
+  }
+
+  return true;
+}
+
+export async function resetCustomerByUrl(
+  password: string,
+  resetUrl: string
+): Promise<{ customer: ShopifyCustomer | null; accessToken: string | null } | null> {
+  const res = await shopifyFetch<ShopifyCustomerResetOperation>({
+    query: customerResetByUrlMutation,
+    variables: { password, resetUrl },
+    cache: 'no-store'
+  });
+
+  const { data } = res.body;
+
+  if (data.customerResetByUrl.customerUserErrors.length > 0) {
+    console.error(data.customerResetByUrl.customerUserErrors);
+    return null;
+  }
+
+  return {
+    customer: data.customerResetByUrl.customer,
+    accessToken: data.customerResetByUrl.customerAccessToken?.accessToken || null
+  };
 }
 
 // This is called from `app/api/revalidate.ts` so providers can control revalidation logic.

@@ -124,10 +124,10 @@ export default function CartModal() {
                                     width={64}
                                     height={64}
                                     alt={
-                                      item.merchandise.product.featuredImage.altText ||
+                                      item.merchandise.product.featuredImage?.altText ||
                                       item.merchandise.product.title
                                     }
-                                    src={item.merchandise.product.featuredImage.url}
+                                    src={item.merchandise.product.featuredImage?.url}
                                   />
                                 </div>
                                 <Link
